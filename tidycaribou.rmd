@@ -1,0 +1,79 @@
+---
+title: "tidycaribou"
+author: "Jon Powell"
+date: "23/06/2020"
+output: github_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidytuesdayR)
+library(tidyverse)
+theme_set(theme_light())
+tuesdata <- tidytuesdayR::tt_load('2020-06-23')
+
+```
+
+```{r}
+tuesdata$locations %>% 
+view()
+locations <- tuesdata$locations
+
+individuals <- tuesdata$individuals %>%
+  view()
+```
+
+```{r}
+individuals %>% 
+  summarise(across(sex:study_site, list (~ mean(!is.na(.)))))
+
+individuals %>% 
+  filter(deploy_on_latitude > 40) %>% 
+  filter(deploy_off_type == "dead") %>% 
+  #count(death_cause, sort = TRUE) %>% 
+  count(study_site, deploy_on_longitude, deploy_on_latitude, sort = TRUE) %>% 
+ggplot(aes(deploy_on_longitude, deploy_on_latitude, size = n, colour = study_site))+
+  borders("world", regions = "canada" )+
+  geom_point() +
+  scale_size_continuous(guide = FALSE)+
+  ggthemes::theme_map()
+```
+
+```{r}
+locations %>% 
+  ggplot(aes(longitude, latitude, colour = study_site))+
+  geom_point()
+```
+
+```{r}
+locations %>% 
+  group_by(animal_id, study_site) %>% 
+  summarise(start = min(timestamp),
+            end = max(timestamp),
+            num_points =n())
+ ```
+
+ 
+ 
+
+```{r}
+library(janitor)
+number <-tuesdata$locations %>% 
+  group_by(study_site, animal_id) %>% 
+  count()
+
+ggplot(number, aes(study_site,n))+
+  geom_col()
+```
+
+```{r}
+locations %>% 
+  ggplot(aes(study_site, animal_id))+
+  geom_line()
+```
+
